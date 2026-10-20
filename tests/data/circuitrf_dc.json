@@ -1,0 +1,96 @@
+{
+  "circuitrf": {
+    "version": "1.0.9",
+    "verb": "dc"
+  },
+  "input": {
+    "path": "case.cnl"
+  },
+  "status": "ok",
+  "exitCode": 0,
+  "outputs": [],
+  "diagnostics": [],
+  "result": {
+    "groups": {
+      "": {
+        "V": {
+          "kind": "real",
+          "unit": "V",
+          "axes": [
+            {
+              "name": "node",
+              "unit": "V",
+              "length": 4,
+              "values": [
+                0,
+                1,
+                2,
+                3
+              ],
+              "labels": [
+                "vdd",
+                "a",
+                "__diode_D1_int",
+                "b"
+              ]
+            }
+          ],
+          "values": [
+            5,
+            0.6247666275987847,
+            0.6028904607399024,
+            3.7499999971875004
+          ]
+        },
+        "Converged": {
+          "kind": "real",
+          "unit": "index",
+          "axes": [],
+          "values": [
+            1
+          ]
+        },
+        "Residual": {
+          "kind": "real",
+          "unit": "1",
+          "axes": [],
+          "values": [
+            1.1164361362475672E-08
+          ]
+        }
+      }
+    },
+    "shape": {
+      "groups": {
+        "": {
+          "V": {
+            "kind": "real",
+            "unit": "V",
+            "elements": 4,
+            "axes": [
+              {
+                "name": "node",
+                "unit": "V",
+                "length": 4,
+                "first": 0,
+                "last": 3
+              }
+            ]
+          },
+          "Converged": {
+            "kind": "real",
+            "unit": "index",
+            "elements": 1,
+            "axes": []
+          },
+          "Residual": {
+            "kind": "real",
+            "unit": "1",
+            "elements": 1,
+            "axes": []
+          }
+        }
+      }
+    }
+  }
+}

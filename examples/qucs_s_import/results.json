@@ -1,0 +1,97 @@
+{
+ "qucs_s": "qucs-s qucs s26.1.1 (46e47e8)",
+ "imported_components": 7,
+ "not_imported": [
+  "Eqn:Eqn1"
+ ],
+ "lint": [],
+ "simulators": {
+  "scikit-rf": {
+   "status": "ok",
+   "wall_s": 0.012,
+   "reason": null,
+   "max_dS_vs_scikit_rf": null,
+   "s21_s31_db_range": {
+    "S21": [
+     -3.522,
+     -3.01
+    ],
+    "S31": [
+     -3.522,
+     -3.01
+    ],
+    "S32": [
+     -45.676,
+     -3.522
+    ]
+   }
+  },
+  "ngspice": {
+   "status": "ok",
+   "wall_s": 0.267,
+   "reason": null,
+   "max_dS_vs_scikit_rf": 1.3305222205433455e-08,
+   "s21_s31_db_range": {
+    "S21": [
+     -3.522,
+     -3.01
+    ],
+    "S31": [
+     -3.522,
+     -3.01
+    ],
+    "S32": [
+     -45.676,
+     -3.522
+    ]
+   }
+  },
+  "xyce": {
+   "status": "unsupported",
+   "wall_s": null,
+   "reason": "xyce: tline Line1 in .SPARAM is not reliable in Xyce 7.10 (measured: T/LTRA act as a wire and YLIN as an open circuit in .AC/.LIN)",
+   "max_dS_vs_scikit_rf": null,
+   "s21_s31_db_range": {}
+  },
+  "qucsator": {
+   "status": "ok",
+   "wall_s": 0.361,
+   "reason": null,
+   "max_dS_vs_scikit_rf": 1.2187194808943674e-15,
+   "s21_s31_db_range": {
+    "S21": [
+     -3.522,
+     -3.01
+    ],
+    "S31": [
+     -3.522,
+     -3.01
+    ],
+    "S32": [
+     -45.676,
+     -3.522
+    ]
+   }
+  },
+  "circuitrf": {
+   "status": "ok",
+   "wall_s": 0.621,
+   "reason": null,
+   "max_dS_vs_scikit_rf": 7.045275952431998e-11,
+   "s21_s31_db_range": {
+    "S21": [
+     -3.522,
+     -3.01
+    ],
+    "S31": [
+     -3.522,
+     -3.01
+    ],
+    "S32": [
+     -45.676,
+     -3.522
+    ]
+   }
+  }
+ }
+}

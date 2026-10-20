@@ -1,0 +1,264 @@
+{
+ "ideal": {
+  "lint": {
+   "counts": {
+    "error": 0,
+    "warning": 0,
+    "info": 1
+   },
+   "warnings": []
+  },
+  "project_reference": "ideal.s2p",
+  "project_metrics": {
+   "pass_max_s11_db": -16.4273,
+   "pass_min_s21_db": -0.1,
+   "stop_max_s21_db": -25.8074,
+   "f3db_ghz": 2.836
+  },
+  "simulators": {
+   "scikit-rf": {
+    "status": "ok",
+    "version": "scikit-rf",
+    "wall_s": 0.016,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -16.4273,
+     "pass_min_s21_db": -0.1,
+     "stop_max_s21_db": -25.8074,
+     "f3db_ghz": 2.836
+    },
+    "max_dS_vs_project": 6.574377135298347e-13,
+    "passivity": 1.000000000000006
+   },
+   "ngspice": {
+    "status": "ok",
+    "version": "ngspice-46 : Circuit level simulation program",
+    "wall_s": 0.228,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -16.4273,
+     "pass_min_s21_db": -0.1,
+     "stop_max_s21_db": -25.8074,
+     "f3db_ghz": 2.836
+    },
+    "max_dS_vs_project": 4.946416204978614e-09,
+    "max_dS_vs_scikit_rf": 4.9464161910671934e-09,
+    "worst_entry": "S11",
+    "at_ghz": 2.475,
+    "passivity": 1.0000000086571013
+   },
+   "xyce": {
+    "status": "ok",
+    "version": "Xyce DEVELOPMENT-202605101446-(7.10.0-172-g67790c60-dirty)-opensource",
+    "wall_s": 0.317,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -16.4273,
+     "pass_min_s21_db": -0.1,
+     "stop_max_s21_db": -25.8074,
+     "f3db_ghz": 2.836
+    },
+    "max_dS_vs_project": 6.968379083729789e-10,
+    "max_dS_vs_scikit_rf": 6.968377121881437e-10,
+    "worst_entry": "S12",
+    "at_ghz": 1.0,
+    "passivity": 1.0000000019301043
+   },
+   "qucsator": {
+    "status": "ok",
+    "version": "Qucsator 1.0.7",
+    "wall_s": 0.251,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -16.4273,
+     "pass_min_s21_db": -0.1,
+     "stop_max_s21_db": -25.8074,
+     "f3db_ghz": 2.836
+    },
+    "max_dS_vs_project": 7.21047301099232e-12,
+    "max_dS_vs_scikit_rf": 7.083344291473301e-12,
+    "worst_entry": "S22",
+    "at_ghz": 3.025,
+    "passivity": 1.0000000000000022
+   },
+   "circuitrf": {
+    "status": "ok",
+    "version": "1.0.9",
+    "wall_s": 0.532,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -16.4273,
+     "pass_min_s21_db": -0.1,
+     "stop_max_s21_db": -25.8074,
+     "f3db_ghz": 2.836
+    },
+    "max_dS_vs_project": 6.852413208809058e-11,
+    "max_dS_vs_scikit_rf": 6.852341046234012e-11,
+    "worst_entry": "S21",
+    "at_ghz": 2.55,
+    "passivity": 1.0000000001586642
+   }
+  },
+  "overall": "pass"
+ },
+ "as_drawn": {
+  "lint": {
+   "counts": {
+    "error": 0,
+    "warning": 0,
+    "info": 2
+   },
+   "warnings": []
+  },
+  "project_reference": "pred_as_drawn.s2p",
+  "project_metrics": {
+   "pass_max_s11_db": -0.4154,
+   "pass_min_s21_db": -10.9911,
+   "stop_max_s21_db": -49.4082,
+   "f3db_ghz": 2.2107
+  },
+  "simulators": {
+   "scikit-rf": {
+    "status": "ok",
+    "version": "scikit-rf",
+    "wall_s": 0.047,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -0.4154,
+     "pass_min_s21_db": -10.9911,
+     "stop_max_s21_db": -49.4082,
+     "f3db_ghz": 2.2107
+    },
+    "max_dS_vs_project": 6.966166449413797e-13,
+    "passivity": 0.9997701761094901
+   },
+   "ngspice": {
+    "status": "unsupported",
+    "version": "ngspice-46 : Circuit level simulation program",
+    "wall_s": null,
+    "reason": "ngspice: sblock EM (Touchstone blocks) not supported; use qucsator, circuitRF or scikit-rf"
+   },
+   "xyce": {
+    "status": "unsupported",
+    "version": "Xyce DEVELOPMENT-202605101446-(7.10.0-172-g67790c60-dirty)-opensource",
+    "wall_s": null,
+    "reason": "xyce: sblock EM in .SPARAM is not reliable in Xyce 7.10 (measured: T/LTRA act as a wire and YLIN as an open circuit in .AC/.LIN)"
+   },
+   "qucsator": {
+    "status": "ok",
+    "version": "Qucsator 1.0.7",
+    "wall_s": 0.357,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -0.4154,
+     "pass_min_s21_db": -10.9911,
+     "stop_max_s21_db": -49.4082,
+     "f3db_ghz": 2.2107
+    },
+    "max_dS_vs_project": 7.284997140302849e-12,
+    "max_dS_vs_scikit_rf": 7.161301383349101e-12,
+    "worst_entry": "S22",
+    "at_ghz": 2.4,
+    "passivity": 0.9997701761094901
+   },
+   "circuitrf": {
+    "status": "ok",
+    "version": "1.0.9",
+    "wall_s": 1.141,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -0.4154,
+     "pass_min_s21_db": -10.9911,
+     "stop_max_s21_db": -49.4082,
+     "f3db_ghz": 2.2107
+    },
+    "max_dS_vs_project": 7.091641368011553e-11,
+    "max_dS_vs_scikit_rf": 7.091643170292765e-11,
+    "worst_entry": "S11",
+    "at_ghz": 2.275,
+    "passivity": 0.9997701761561971
+   }
+  },
+  "overall": "pass"
+ },
+ "e24": {
+  "lint": {
+   "counts": {
+    "error": 0,
+    "warning": 0,
+    "info": 2
+   },
+   "warnings": []
+  },
+  "project_reference": "pred_e24.s2p",
+  "project_metrics": {
+   "pass_max_s11_db": -19.5581,
+   "pass_min_s21_db": -0.0988,
+   "stop_max_s21_db": -31.8426,
+   "f3db_ghz": 2.9121
+  },
+  "simulators": {
+   "scikit-rf": {
+    "status": "ok",
+    "version": "scikit-rf",
+    "wall_s": 0.045,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -19.5581,
+     "pass_min_s21_db": -0.0988,
+     "stop_max_s21_db": -31.8426,
+     "f3db_ghz": 2.9121
+    },
+    "max_dS_vs_project": 7.008927204355276e-13,
+    "passivity": 0.9997734532736849
+   },
+   "ngspice": {
+    "status": "unsupported",
+    "version": "ngspice-46 : Circuit level simulation program",
+    "wall_s": null,
+    "reason": "ngspice: sblock EM (Touchstone blocks) not supported; use qucsator, circuitRF or scikit-rf"
+   },
+   "xyce": {
+    "status": "unsupported",
+    "version": "Xyce DEVELOPMENT-202605101446-(7.10.0-172-g67790c60-dirty)-opensource",
+    "wall_s": null,
+    "reason": "xyce: sblock EM in .SPARAM is not reliable in Xyce 7.10 (measured: T/LTRA act as a wire and YLIN as an open circuit in .AC/.LIN)"
+   },
+   "qucsator": {
+    "status": "ok",
+    "version": "Qucsator 1.0.7",
+    "wall_s": 0.325,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -19.5581,
+     "pass_min_s21_db": -0.0988,
+     "stop_max_s21_db": -31.8426,
+     "f3db_ghz": 2.9121
+    },
+    "max_dS_vs_project": 7.008927204355276e-13,
+    "max_dS_vs_scikit_rf": 2.7894008272968645e-15,
+    "worst_entry": "S11",
+    "at_ghz": 2.9,
+    "passivity": 0.9997734532736843
+   },
+   "circuitrf": {
+    "status": "ok",
+    "version": "1.0.9",
+    "wall_s": 0.701,
+    "reason": null,
+    "metrics": {
+     "pass_max_s11_db": -19.5581,
+     "pass_min_s21_db": -0.0988,
+     "stop_max_s21_db": -31.8426,
+     "f3db_ghz": 2.9121
+    },
+    "max_dS_vs_project": 6.77289394356475e-11,
+    "max_dS_vs_scikit_rf": 6.772868301830512e-11,
+    "worst_entry": "S22",
+    "at_ghz": 5.475,
+    "passivity": 0.9997734532696735
+   }
+  },
+  "overall": "pass"
+ }
+}

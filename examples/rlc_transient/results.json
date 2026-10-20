@@ -1,0 +1,132 @@
+{
+ "rlc": {
+  "lint": [],
+  "reference_sim": "ngspice",
+  "simulators": {
+   "ngspice": {
+    "status": "ok",
+    "version": "ngspice-46 : Circuit level simulation program",
+    "wall_s": 0.79,
+    "reason": null,
+    "vs_closed_form": {
+     "c": {
+      "max_dv": 0.000243,
+      "at_ns": 2.154,
+      "rel_to_swing": 0.000131,
+      "rms_dv": 0.0001047
+     }
+    }
+   },
+   "xyce": {
+    "status": "ok",
+    "version": "Xyce DEVELOPMENT-202605101446-(7.10.0-172-g67790c60-dirty)-opensource",
+    "wall_s": 2.681,
+    "reason": null,
+    "vs_closed_form": {
+     "c": {
+      "max_dv": 0.000245,
+      "at_ns": 2.156,
+      "rel_to_swing": 0.000132,
+      "rms_dv": 0.0001057
+     }
+    },
+    "vs_first_simulator": 1.1466868111870023e-05
+   },
+   "qucsator": {
+    "status": "ok",
+    "version": "Qucsator 1.0.7",
+    "wall_s": 1.22,
+    "reason": null,
+    "vs_closed_form": {
+     "c": {
+      "max_dv": 6.7e-05,
+      "at_ns": 2.14,
+      "rel_to_swing": 3.6e-05,
+      "rms_dv": 2.89e-05
+     }
+    },
+    "vs_first_simulator": 9.528946638008225e-05
+   },
+   "circuitrf": {
+    "status": "unsupported",
+    "version": "1.0.9",
+    "wall_s": null,
+    "reason": "circuitRF has no transient analysis"
+   }
+  }
+ },
+ "tline": {
+  "lint": [],
+  "reference_sim": "ngspice",
+  "simulators": {
+   "ngspice": {
+    "status": "ok",
+    "version": "ngspice-46 : Circuit level simulation program",
+    "wall_s": 0.2,
+    "reason": null,
+    "vs_closed_form": {
+     "near": {
+      "max_dv": 0.0125,
+      "at_ns": 0.26,
+      "rel_to_swing": 0.0125,
+      "rms_dv": 0.0007211
+     },
+     "far": {
+      "max_dv": 0.025,
+      "at_ns": 0.16,
+      "rel_to_swing": 0.025,
+      "rms_dv": 0.0014422
+     }
+    }
+   },
+   "xyce": {
+    "status": "ok",
+    "version": "Xyce DEVELOPMENT-202605101446-(7.10.0-172-g67790c60-dirty)-opensource",
+    "wall_s": 0.586,
+    "reason": null,
+    "vs_closed_form": {
+     "near": {
+      "max_dv": 0.0,
+      "at_ns": 0.261,
+      "rel_to_swing": 0.0,
+      "rms_dv": 0.0
+     },
+     "far": {
+      "max_dv": 0.0,
+      "at_ns": 0.159,
+      "rel_to_swing": 0.0,
+      "rms_dv": 0.0
+     }
+    },
+    "vs_first_simulator": 0.025000000249999953
+   },
+   "qucsator": {
+    "status": "ok",
+    "version": "Qucsator 1.0.7",
+    "wall_s": 0.273,
+    "reason": null,
+    "vs_closed_form": {
+     "near": {
+      "max_dv": 0.0,
+      "at_ns": 0.261,
+      "rel_to_swing": 0.0,
+      "rms_dv": 0.0
+     },
+     "far": {
+      "max_dv": 0.0,
+      "at_ns": 0.161,
+      "rel_to_swing": 0.0,
+      "rms_dv": 0.0
+     }
+    },
+    "vs_first_simulator": 0.025000000250002506
+   },
+   "circuitrf": {
+    "status": "unsupported",
+    "version": "1.0.9",
+    "wall_s": null,
+    "reason": "circuitRF has no transient analysis"
+   }
+  }
+ }
+}

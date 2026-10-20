@@ -1,0 +1,208 @@
+# External tools, MCP servers and libraries used or evaluated by circuit-agent-tools (agent.rf).
+# Machine-readable for the agent.rf registry. Checked 2026-10-19 (GitHub REST API, PyPI, anaconda.org, local runs).
+# relation: depends (Python dependency) | runs (executed as a separate process) | records-to | points-to
+#           (recommended alongside, not used by our code) | evaluated (looked at, not used)
+schema: agent-rf.external/1
+project: circuit-agent-tools
+project_licence: Apache-2.0
+checked: '2026-10-19'
+entries:
+  - name: circuitRF (CLI verbs + built-in MCP server `circuitrf serve`)
+    repo: https://github.com/potatobeanradio/circuitRF
+    licence: MIT
+    version: 1.0.9 installed (~/.local/share/circuitRF/current); latest release 1.0.14, commit 20daaedbc936
+    kind: simulator + mcp-server
+    tools_exposed: [run, check, explain, create, import, convert, render, netlist, plot, find, lvs, recognize,
+                    impedance, read, history, solver, reference, batch]
+    cli_verbs_used: [sparam, dc, hb, check, explain, reference, '--version']
+    relation: runs, points-to
+    how_we_use_it: >-
+      Backend for S-parameters (sparam), DC (dc --json) and harmonic balance (hb --json) in translate/crosscheck:
+      we write a .cnl (+ a generated .ctech for microstrip) and parse its Touchstone/JSON. We do NOT wrap its MCP:
+      for native circuitRF work (workspaces, schematics, layout, EM, loadpull, yield) agents should use
+      `circuitrf serve --root DIR` directly; our MCP instructions say so.
+    verified: yes
+    test: >-
+      MCP stdio handshake (initialize -> serverInfo circuitrf 1.0.9, protocol 2025-06-18; tools/list -> 18 tools);
+      CLI: examples/* cross-checks (max |dS| vs scikit-rf 7e-11 on lumped and EM S-block circuits; HB within
+      0.02 dB of Xyce/ngspice at 32 harmonics); tests/test_simulators.py.
+    notes: >-
+      `circuitrf --help` and a bare call start the GUI (hang headless): the verb must come first. HB Tone needs a
+      variable or a bare number. MLIN with t/h = 0.07 differs from Hammerstad-Jensen thickness correction
+      (eeff +2.7 %, Z0 -1.2 %, conductor loss +47 %) - reported as lint TLN004. No transient analysis.
+
+  - name: scikit-rf
+    repo: https://github.com/scikit-rf/scikit-rf
+    licence: BSD-3-Clause
+    version: 2.2.0 (PyPI; upstream commit 05f8486420fe)
+    kind: python-library
+    relation: depends
+    how_we_use_it: >-
+      Reference solver (skrf.circuit.Circuit) for every linear S-parameter cross-check, microstrip model
+      (skrf.media.MLine with diel='frequencyinvariant', rough=0), Touchstone reading, S->ABCD conversion,
+      S-block interpolation; also the SWP001 sweep-resolution lint rule.
+    verified: yes
+    test: tests/test_reference_api.py (closed-form RC and L-match to 1e-12); every example's reference column.
+    notes: MLine defaults (Djordjevic-Svensson dielectric, 0.15 um roughness) differ from qucsator/circuitRF.
+
+  - name: ngspice
+    repo: https://sourceforge.net/projects/ngspice/
+    licence: BSD-3-Clause (mostly; some parts other licences, see the ngspice COPYING)
+    version: ngspice-46 development build (conda package unic-cass/ngspice 45.2_158_g4feeb94b1)
+    kind: simulator
+    install: micromamba create -n circuit-sim -c unic-cass -c conda-forge xyce ngspice (user space, no sudo)
+    relation: runs
+    how_we_use_it: batch decks with .control/wrdata; AC drive per port for S-parameters; op; tran + linearize; transient+DFT as a steady-state check of HB.
+    verified: yes
+    test: examples (RC/LPF 5e-9, L-match 5e-9, DC 4e-6 V, RLC step 1.3e-4 of swing vs closed form); tests/test_simulators.py
+    notes: conda-forge's own ngspice is version 41; no Touchstone blocks; microstrip only as a frozen RLGC LTRA.
+
+  - name: Xyce
+    repo: https://github.com/Xyce/Xyce
+    licence: GPL-3.0
+    version: 7.10.0-172-g67790c60 development build (conda package unic-cass/xyce 7.10.0_172_g67790c60, needs conda-forge fftw)
+    kind: simulator
+    relation: runs
+    how_we_use_it: .LIN S-parameters with P ports, .DC, .TRAN, .HB (incl. YLIN Touchstone blocks).
+    verified: yes
+    test: examples (LPF 7e-10, L-match 6.6e-10, HB 0.011 dB at 32 harmonics, RLC step 1.3e-4 of swing); tests/test_simulators.py
+    notes: >-
+      In this build T (ideal line) and LTRA act as a wire and YLIN as an open circuit in .AC/.LIN, with no
+      warning; YLIN works in .HB and T in .TRAN. The translator refuses those combinations (lint XYC001).
+      The unic-cass package misses its libfftw3 dependency.
+
+  - name: qucsator_rf (Qucs-S RF simulation kernel)
+    repo: https://github.com/ra3xdh/qucsator_rf
+    licence: GPL-2.0
+    version: 1.0.7, commit 951bfedf5210 (built from source, ~/.local/opt/qucsator_rf)
+    kind: simulator
+    install: cmake build in the circuit-sim env (flex, bison, gperf from conda-forge; -DBISON_DIR; a dos2unix shim)
+    relation: runs
+    how_we_use_it: qucsator netlists (.SP, .DC, .TR, .HB) incl. MLIN/SUBST and SPfile; Qucs dataset parser.
+    verified: yes
+    test: examples (LPF and EM 7-port S-block 7e-12, quarter-wave microstrip 1.2e-3 vs scikit-rf); tests/test_translate_parse.py
+    notes: Diode takes the cathode first (opposite of SPICE). .HB did not converge on a diode driven with 1 V through 50 ohm.
+
+  - name: Qucs-S
+    repo: https://github.com/ra3xdh/qucs_s
+    licence: GPL-2.0
+    version: 26.1.1, commit 46e47e8fabe8 (built from source against conda-forge qt6-main, ~/.local/opt/qucs-s)
+    kind: gui-simulator-frontend
+    relation: runs
+    how_we_use_it: headless schematic -> qucsator netlist conversion (`QT_QPA_PLATFORM=offscreen qucs-s -n -i x.sch -o x.net`), then circuit_import_qucs builds the neutral spec.
+    verified: yes
+    test: examples/qucs_s_import (Qucs-S's own wilkinson.sch -> spec -> ngspice 1.3e-8, qucsator 1.2e-15, circuitRF 7e-11 vs scikit-rf)
+    notes: The unic-cass conda qucs-s package needs Qt 6.7 from the Anaconda defaults channel, so it was built instead. We do not write .sch files.
+
+  - name: rflab-core
+    repo: local:C:/Users/ben/jobs/rflab-core
+    licence: Apache-2.0
+    version: 0.1.0 (commit a623e64)
+    kind: python-library
+    relation: records-to
+    how_we_use_it: every simulator run and every cross-check is stored with rflab.record() (kind=circuit; cross-check record is the parent_run of its simulator runs); JSON-lines drop-box fallback when rflab is not importable.
+    verified: yes
+    test: tests/test_reference_api.py::test_record_through_rflab and ::test_record_fallback_jsonl_is_schema_valid (rflab.schema.validate == [])
+
+  - name: mcp-ltspice-qucs (mcp-ltspice, mcp-qucs-s, mcp-rf-analysis)
+    repo: https://github.com/RFingAdam/mcp-ltspice-qucs
+    licence: AGPL-3.0 (plus CLA)
+    version: commit 585165294fd6 (2026-09-10)
+    kind: mcp-server
+    tools_exposed: "~140 tools: LC/distributed filter synthesis, LTspice/ngspice runs, Qucs-S S-parameters, Xyce HB, scikit-rf wrappers, coexistence/emissions checks"
+    relation: points-to
+    how_we_use_it: Not imported or vendored (AGPL). Recommended as a separate MCP process for filter synthesis and EMC/coexistence work; our cross-check can verify its Touchstone outputs (circuit_touchstone_check, sblock specs).
+    verified: no
+    test: none (README and repository listing only)
+
+  - name: SPICEBridge
+    repo: https://github.com/clanker-lover/spicebridge
+    licence: GPL-3.0
+    version: PyPI 1.3.0 (GitHub release v1.1.14, commit fb1de30fda06)
+    kind: mcp-server
+    tools_exposed: "28 tools: circuit templates, AC/transient/OP, measurements, Monte Carlo, KiCad export"
+    relation: points-to
+    how_we_use_it: Not used by our code. For general ngspice design work (templates, Monte Carlo, KiCad export) agents can run it as a separate MCP process; we do not duplicate those features.
+    verified: no
+    test: none
+
+  - name: ltspice-mcp
+    repo: https://github.com/Cognitohazard/ltspice-mcp
+    licence: GPL-3.0
+    version: commit 50d1560f3cc8
+    kind: mcp-server
+    tools_exposed: "8 tools: named measurements, .asc editing, run_code; ngspice/Xyce/QSPICE secondary backends"
+    relation: points-to
+    how_we_use_it: Not used; the LTspice path if a user has LTspice. Note it exposes code execution and its sandbox is off by default.
+    verified: no
+    test: none
+
+  - name: aispice
+    repo: https://github.com/danieltyukov/aispice
+    licence: MIT
+    version: v0.2.0, commit 41d501a0af8f
+    kind: mcp-server (Rust)
+    relation: evaluated
+    how_we_use_it: Not used; analog-IC flow (IHP SG13G2 to layout) rather than RF S-parameter work.
+    verified: no
+    test: none
+
+  - name: ngspice-mcp (gtnoble)
+    repo: https://github.com/gtnoble/ngspice-mcp
+    licence: none stated
+    version: commit 75e9f59863b8 (2025-04-13)
+    kind: mcp-server (D, ngspice shared library)
+    relation: evaluated
+    how_we_use_it: Not used (no licence, D toolchain, inactive since 2025-04).
+    verified: no
+    test: none
+
+  - name: mcp-spice (zesun33)
+    repo: https://github.com/zesun33/mcp-spice
+    licence: NOASSERTION
+    version: commit 86a4cdfa413c
+    kind: mcp-server (npm, Podman)
+    relation: evaluated
+    how_we_use_it: Not used (licence unclear; .meas-only results).
+    verified: no
+    test: none
+
+  - name: qucs-mcp
+    repo: https://github.com/leonardoAB1/qucs-mcp
+    licence: none stated
+    version: commit 9b04f3e2c60a
+    kind: mcp-server (QucsStudio, Windows)
+    relation: evaluated
+    how_we_use_it: Not used (no licence; QucsStudio rather than Qucs-S).
+    verified: no
+    test: none
+
+  - name: PySpice
+    repo: https://github.com/PySpice-org/PySpice
+    licence: GPL-3.0
+    version: PyPI 1.5 (commit fe08718d5a1a)
+    kind: python-library
+    relation: evaluated
+    how_we_use_it: Not used; importing a GPL library into an Apache-2.0 package would change its licence, and batch decks are enough here.
+    verified: no
+    test: none
+
+  - name: spicelib
+    repo: https://github.com/nunobrum/spicelib
+    licence: GPL-3.0
+    version: 1.6.4 (commit d8f8ecceeb36)
+    kind: python-library
+    relation: evaluated
+    how_we_use_it: Not used (GPL; netlist editing/batch runs we do not need). A good choice for LTspice/QSPICE automation in a GPL project.
+    verified: no
+    test: none
+
+  - name: unic-cass conda channel (packaging)
+    repo: https://anaconda.org/unic-cass
+    licence: per package (xyce GPL, ngspice BSD-3-Clause, qucs-s GPL-2.0-or-later)
+    version: xyce 7.10.0_172_g67790c60, ngspice 45.2_158_g4feeb94b1 (uploaded 2026-06)
+    kind: package-channel
+    relation: runs
+    how_we_use_it: source of the Xyce and ngspice binaries (conda-forge has ngspice 41 and no Xyce).
+    verified: yes
+    test: circuit-tools doctor; examples

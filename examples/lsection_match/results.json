@@ -1,0 +1,61 @@
+{
+ "design": {
+  "L_nH": 5.743009327310334,
+  "C_pF": 0.5743009327310333,
+  "Q": 1.7320508075688772
+ },
+ "lint": [
+  "PRT001: ports use z0 = [50.0, 200.0] ohm"
+ ],
+ "simulators": {
+  "scikit-rf": {
+   "status": "ok",
+   "version": "scikit-rf",
+   "wall_s": 0.011,
+   "reason": null,
+   "max_dS_vs_closed_form": 6.839921263016203e-13,
+   "s11_db_at_2g4": -303.38,
+   "s21_db_at_2g4": -0.0
+  },
+  "ngspice": {
+   "status": "ok",
+   "version": "ngspice-46 : Circuit level simulation program",
+   "wall_s": 0.213,
+   "reason": null,
+   "max_dS_vs_closed_form": 4.992304487898504e-09,
+   "s11_db_at_2g4": -262.45,
+   "s21_db_at_2g4": 0.0,
+   "max_dS_vs_scikit_rf": 4.992304230439323e-09
+  },
+  "xyce": {
+   "status": "ok",
+   "version": "Xyce DEVELOPMENT-202605101446-(7.10.0-172-g67790c60-dirty)-opensource",
+   "wall_s": 0.281,
+   "reason": null,
+   "max_dS_vs_closed_form": 6.588708309486459e-10,
+   "s11_db_at_2g4": -261.18,
+   "s21_db_at_2g4": 0.0,
+   "max_dS_vs_scikit_rf": 6.588706776324801e-10
+  },
+  "qucsator": {
+   "status": "ok",
+   "version": "Qucsator 1.0.7",
+   "wall_s": 0.209,
+   "reason": null,
+   "max_dS_vs_closed_form": 7.810295808201217e-13,
+   "s11_db_at_2g4": -261.2,
+   "s21_db_at_2g4": -0.0,
+   "max_dS_vs_scikit_rf": 1.2797965896093517e-13
+  },
+  "circuitrf": {
+   "status": "ok",
+   "version": "1.0.9",
+   "wall_s": 0.553,
+   "reason": null,
+   "max_dS_vs_closed_form": 6.962833093394461e-11,
+   "s11_db_at_2g4": -261.19,
+   "s21_db_at_2g4": 0.0,
+   "max_dS_vs_scikit_rf": 6.962821249140804e-11
+  }
+ }
+}

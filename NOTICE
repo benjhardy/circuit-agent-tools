@@ -1,0 +1,10 @@
+circuit-agent-tools
+Copyright 2026 Benjamin Hardy
+
+Licensed under the Apache License, Version 2.0.
+
+This package runs, as separate programs, ngspice (BSD-3-Clause and others), Xyce (GPL-3.0), qucsator_rf and
+Qucs-S (GPL-2.0) and circuitRF (MIT); none of their code is included. It depends on scikit-rf (BSD-3-Clause).
+The Touchstone data in examples/chebyshev_lpf/data/ are the author's own simulation results (port-tuning-palace,
+AWS Palace 0.16). The Qucs-S example schematic used by examples/qucs_s_import is read in place from a Qucs-S
+source tree and is not distributed here.

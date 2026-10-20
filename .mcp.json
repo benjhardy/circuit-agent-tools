@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "circuit-tools": {
+      "command": "python",
+      "args": ["-m", "circuit_tools.mcp_server"]
+    }
+  }
+}

@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "circuit-agent-tools"
+version = "0.1.0"
+description = "JSON-in/JSON-out tools that let AI agents describe, lint, translate, run and cross-check RF circuits in ngspice, Xyce, Qucs-S/qucsator, circuitRF and scikit-rf."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Benjamin Hardy" }]
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "scikit-rf>=0.30"]
+keywords = ["spice", "ngspice", "xyce", "qucs", "qucsator", "circuitrf", "scikit-rf", "rf", "microwave", "s-parameters", "agents", "mcp"]
+classifiers = [
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "scipy>=1.10"]
+
+[project.scripts]
+circuit-tools = "circuit_tools.cli:main"
+circuit-tools-mcp = "circuit_tools.mcp_server:main"
+
+[tool.setuptools.packages.find]
+include = ["circuit_tools*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["sim: needs the external simulators (skipped when they are not installed)"]

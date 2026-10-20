@@ -1,0 +1,68 @@
+{
+ "line_at_2g4": {
+  "z0_ohm": 70.71064839557339,
+  "eeff": 2.598614817519714,
+  "alpha_c_db_per_m": 1.8691727809352725,
+  "alpha_d_db_per_m": 0.8143011575405851
+ },
+ "lint": [
+  "PRT001: ports use z0 = [50.0, 100.0] ohm"
+ ],
+ "simulators": {
+  "scikit-rf": {
+   "status": "ok",
+   "version": "scikit-rf",
+   "wall_s": 0.009,
+   "reason": null,
+   "s11_min_db": -52.54,
+   "f_s11_min_ghz": 2.4,
+   "s21_db_at_2g4": -0.0551,
+   "loss_db_at_2g4": 0.0551
+  },
+  "ngspice": {
+   "status": "ok",
+   "version": "ngspice-46 : Circuit level simulation program",
+   "wall_s": 0.187,
+   "reason": null,
+   "s11_min_db": -50.82,
+   "f_s11_min_ghz": 2.425,
+   "s21_db_at_2g4": -0.055,
+   "loss_db_at_2g4": 0.055,
+   "max_dS_vs_scikit_rf": 0.006767705481885494,
+   "worst": "S22 at 1 GHz",
+   "dS_at_2g4": 0.004921844215042084
+  },
+  "xyce": {
+   "status": "unsupported",
+   "version": "Xyce DEVELOPMENT-202605101446-(7.10.0-172-g67790c60-dirty)-opensource",
+   "wall_s": null,
+   "reason": "xyce: mline TL1 in .SPARAM is not reliable in Xyce 7.10 (measured: T/LTRA act as a wire and YLIN as an open circuit in .AC/.LIN)"
+  },
+  "qucsator": {
+   "status": "ok",
+   "version": "Qucsator 1.0.7",
+   "wall_s": 0.235,
+   "reason": null,
+   "s11_min_db": -53.53,
+   "f_s11_min_ghz": 2.4,
+   "s21_db_at_2g4": -0.0551,
+   "loss_db_at_2g4": 0.055,
+   "max_dS_vs_scikit_rf": 0.001160782548441622,
+   "worst": "S11 at 2.45 GHz",
+   "dS_at_2g4": 0.0011601973862528986
+  },
+  "circuitrf": {
+   "status": "ok",
+   "version": "1.0.9",
+   "wall_s": 0.704,
+   "reason": null,
+   "s11_min_db": -40.26,
+   "f_s11_min_ghz": 2.375,
+   "s21_db_at_2g4": -0.0745,
+   "loss_db_at_2g4": 0.0739,
+   "max_dS_vs_scikit_rf": 0.031371547655323746,
+   "worst": "S12 at 4 GHz",
+   "dS_at_2g4": 0.021872012016116424
+  }
+ }
+}
