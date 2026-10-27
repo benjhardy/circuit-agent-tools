@@ -7,6 +7,9 @@
        {"type": "L", "name": "L2", "nodes": ["in", "n2"], "value": 4.365e-9},
        {"type": "tline", "name": "TL1", "nodes": ["a", "b"], "z0": 70.7, "length_deg": 90, "f_ref": "2.4GHz"},
        {"type": "mline", "name": "ML1", "nodes": ["a", "b"], "w": "1.1mm", "l": "19mm", "substrate": "ro4003c"},
+       {"type": "mcline", "name": "CL1", "nodes": ["b", "c", "d", "e"], "w": "0.9mm", "s": "0.2mm", "l": "8.6mm",
+        "substrate": "ro4003c"},
+       {"type": "mopen", "name": "OE1", "nodes": ["c"], "w": "0.9mm", "substrate": "ro4003c"},
        {"type": "sblock", "name": "EM", "nodes": ["p1", "p2", "p3"], "file": "em.s3p"},
        {"type": "vsource", "name": "V1", "nodes": ["s", "0"], "dc": 0, "pulse": {"v1": 0, "v2": 1, "td": 0, "tr": "10p"}},
        {"type": "diode", "name": "D1", "nodes": ["a", "0"], "model": {"is": 1e-12, "n": 1.05, "rs": 5, "cj0": "0.5pF"}}],
@@ -39,6 +42,16 @@ COMPONENTS = {
     "mline": {"nodes": 2, "params": {"w": "m", "l": "m", "substrate": None},
               "doc": "microstrip line (Hammerstad-Jensen Z0/eeff, Kirschning-Jansen dispersion, conductor and "
                      "dielectric loss) on a named substrate"},
+    "mcline": {"nodes": 4, "params": {"w": "m", "s": "m", "l": "m", "substrate": None},
+               "doc": "symmetric coupled microstrip pair (Kirschning-Jansen even/odd modes and dispersion, conductor "
+                      "and dielectric loss): w strip width, s edge-to-edge gap, l length. Nodes: 1 start and 2 end of "
+                      "line 1, 3 start and 4 end of line 2; line 2 runs in the same direction, so node 3 is beside "
+                      "node 1 (near end) and node 4 beside node 2 (far end)"},
+    "mopen": {"nodes": 1, "params": {"w": "m", "substrate": None},
+              "doc": "microstrip open end of width w (Kirschning-Jansen-Koster end capacitance to ground)"},
+    "mstep": {"nodes": 2, "params": {"w1": "m", "w2": "m", "substrate": None},
+              "doc": "symmetric microstrip width step: node 1 on the w1 side, node 2 on the w2 side (quasi-static "
+                     "shunt C and series L)"},
     "sblock": {"nodes": None, "params": {"file": None, "ref": None},
                "doc": "N-port Touchstone block: nodes = one node per port in file order, ref = common reference "
                       "node (default ground)"},
@@ -161,6 +174,17 @@ def normalize(spec: dict) -> dict:
             c["l"] = _val(c["l"], "m", where, notes)
             if "f_ref" in c:
                 c["f_ref"] = _val(c["f_ref"], "Hz", where, notes)
+            if c.get("substrate") not in subs:
+                raise SpecError(f"{where}: substrate {c.get('substrate')!r} not in substrates")
+        elif t in ("mcline", "mopen", "mstep"):
+            for k in COMPONENTS[t]["params"]:
+                if k == "substrate":
+                    continue
+                if k not in c:
+                    raise SpecError(f"{where}: missing {k}")
+                c[k] = _val(c[k], "m", where, notes)
+                if c[k] <= 0:
+                    raise SpecError(f"{where}: {k} must be positive")
             if c.get("substrate") not in subs:
                 raise SpecError(f"{where}: substrate {c.get('substrate')!r} not in substrates")
         elif t == "sblock":

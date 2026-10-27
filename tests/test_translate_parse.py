@@ -90,6 +90,38 @@ def test_circuitrf_netlist_and_tech():
         circuitrf.CIRCUITRF.build(s, {"type": "tran", "stop": 1, "step": 1e-3, "start": 0, "outputs": []})
 
 
+def _coupled_spec():
+    sp = rc_spec(substrates={"s": {"er": 3.66, "h": "0.508mm", "tand": 0.0037, "sigma": 1e30}})
+    sp["components"] = [c for c in sp["components"] if c["type"] == "port"]
+    sp["components"][1]["nodes"] = ["b2", "0"]
+    sp["components"] += [{"type": "mstep", "name": "S1", "nodes": ["in", "a1"], "w1": "1.112mm", "w2": "0.88mm",
+                          "substrate": "s"},
+                         {"type": "mcline", "name": "CL1", "nodes": ["a1", "o1", "o2", "b2"], "w": "0.88mm",
+                          "s": "0.18mm", "l": "8.6mm", "substrate": "s"},
+                         {"type": "mopen", "name": "OE1", "nodes": ["o1"], "w": "0.88mm", "substrate": "s"},
+                         {"type": "mopen", "name": "OE2", "nodes": ["o2"], "w": "0.88mm", "substrate": "s"}]
+    return sp
+
+
+def test_qucsator_coupled_microstrip_parts():
+    net = _build("qucsator", _coupled_spec()).files["case.net"]
+    assert net.count("SUBST:Sub_s ") == 1
+    # spec order: line 1 a1 -> o1, line 2 o2 -> b2 in the same direction; MCOUPLED wants line 2 from the far end
+    assert ('MCOUPLED:CL1 a1 o1 b2 o2 Subst="Sub_s" W="0.00088" L="0.0086" S="0.00018" Model="Kirschning" '
+            'DispModel="Kirschning"') in net
+    assert 'MOPEN:OE1 o1 Subst="Sub_s" W="0.00088" MSDispModel="Kirschning" MSModel="Hammerstad" '            'Model="Kirschning"' in net
+    assert 'MSTEP:S1 in a1 Subst="Sub_s" W1="0.001112" W2="0.00088"' in net
+    sp = _coupled_spec()
+    sp["components"][2].update(nodes=["a1", "in"], w1="0.88mm", w2="1.112mm")   # narrow side first in the spec
+    assert 'MSTEP:S1 in a1 Subst="Sub_s" W1="0.001112" W2="0.00088"' in _build("qucsator", sp).files["case.net"]
+
+
+@pytest.mark.parametrize("sim", ["ngspice", "xyce", "circuitrf"])
+def test_coupled_microstrip_refused_elsewhere(sim):
+    with pytest.raises(Unsupported, match="mstep|mcline|mopen"):
+        _build(sim, _coupled_spec())
+
+
 def test_hb_sources_cosine_reference():
     sp = {"components": [{"type": "vsource", "name": "V1", "nodes": ["s", "0"], "sin": {"amp": 1, "freq": 1e8}},
                          {"type": "R", "name": "R", "nodes": ["s", "a"], "value": 50},
@@ -169,5 +201,8 @@ def test_support_matrix_shape():
     m = support_matrix()
     assert set(m) == {"ngspice", "xyce", "qucsator", "circuitrf", "scikit-rf"}
     assert "sblock" in m["qucsator"]["sparam"]["components"] and "sblock" not in m["ngspice"]["sparam"]["components"]
+    for part in ("mcline", "mopen", "mstep"):
+        assert part in m["qucsator"]["sparam"]["components"]
+        assert all(part not in m[k]["sparam"]["components"] for k in ("ngspice", "xyce", "circuitrf", "scikit-rf"))
     assert m["circuitrf"]["tran"]["components"] == [] and math.isfinite(len(m["xyce"]["hb"]["components"]))
     assert spice.NGSPICE.NAME == "ngspice"

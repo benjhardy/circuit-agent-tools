@@ -30,6 +30,8 @@ Each rule below is checked by `circuit-tools lint`. Rules marked *reference* run
 | TLN002 | Microstrip in SPICE is a frozen RLGC line |
 | TLN003 | Ideal line given as electrical length |
 | TLN004 | Thick-strip microstrip correction differs between tools |
+| TLN005 | Coupled microstrip model limits |
+| TLN006 | Open-end and width-step models |
 | XYC001 | Xyce frequency-domain distributed and data elements |
 | TRN001 | Transient output step vs circuit time constants |
 | TRN002 | Edges faster than the time step |
@@ -191,6 +193,18 @@ Source: practice.
 For a 0.579 mm, 70.7 ohm line on 0.508 mm RO4003C with 35 um copper (t/h = 0.07), scikit-rf and qucsator (Hammerstad-Jensen thickness correction) gave Z0 70.71 ohm, eeff 2.5986, 1.87 dB/m conductor loss; circuitRF 1.0.9 gave 69.83 ohm, eeff 2.6675 (+2.7 %) and 2.75 dB/m. With t = 1 nm all three agree (73.1 ohm, 2.6561), so the difference is the thickness/conductor-loss model, not the substrate. A quarter wave moves by ~1.3 % in frequency.
 
 Source: this package (quarter_wave_microstrip example, 2026-10-19).
+
+## TLN005: Coupled microstrip model limits
+
+The Kirschning-Jansen coupled-microstrip equations (even/odd Z0 and eeff, and their dispersion) are fits for 0.1 <= w/h <= 10, 0.1 <= s/h <= 10 and 1 <= er <= 18. Outside that range the even/odd impedances drift without a warning from the simulator. A coupled section is also a single strip for the surface-wave and transverse-resonance limits of TLN001.
+
+Source: Kirschning & Jansen, IEEE MTT-32 (1984); qucsator mscoupled.cpp.
+
+## TLN006: Open-end and width-step models
+
+qucsator's MOPEN (Kirschning-Jansen-Koster) is an end capacitance fitted for 0.01 <= w/h <= 100, 1 <= er <= 50. MSTEP is a shunt C and series L from the Gupta-Garg fits (er <= 10, wide/narrow ratio 1.5-3.5 for C, <= 5 for L) and assumes W1 >= W2: written narrow side first (0.6 -> 1.2 mm on 0.508 mm RO4350B, 5 GHz) it gave S11 = +j4.6e-3 and a phase advance of 0.22 degrees, wide side first -j0.95e-3 and a delay of 0.39 degrees. The qucsator translator writes the wide side first. Neither part models the coupling to a neighbouring strip.
+
+Source: qucsator msopen.cpp, msstep.cpp; Kirschning, Jansen & Koster, Electron. Lett. 1981; Gupta et al., Microstrip Lines and Slotlines; this package (measured, 2026-10-26).
 
 ## XYC001: Xyce frequency-domain distributed and data elements
 

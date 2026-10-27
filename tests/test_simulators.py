@@ -59,3 +59,22 @@ def test_dc_and_tran(available, tmp_path, monkeypatch):
     assert len(ok) >= 1
     for row in ok:
         assert row["summary"]["final_v"]["c"] == pytest.approx(1 - np.exp(-(0.9e-9) / 1e-10), abs=5e-3)
+
+
+def test_qucsator_coupled_line_port_order(available, tmp_path, monkeypatch):
+    if "qucsator" not in available:
+        pytest.skip("qucsator not installed")
+    monkeypatch.setenv("CIRCUIT_TOOLS_RECORD", "0")
+    sp = {"name": "cl", "substrates": {"s": {"er": 3.66, "h": "0.508mm", "sigma": 1e30}},
+          "components": [{"type": "port", "name": f"P{k}", "nodes": [n, "0"], "num": k}
+                         for k, n in enumerate(["a1", "a2", "b1", "b2"], 1)]
+          + [{"type": "mcline", "name": "CL", "nodes": ["a1", "a2", "b1", "b2"], "w": "0.88mm", "s": "0.18mm",
+              "l": "8.6mm", "substrate": "s"}],
+          "analyses": [{"type": "sparam", "start": "3GHz", "stop": "7GHz", "points": 81}]}
+    r = engine.simulate(sp, "qucsator", tmp_path, do_record=False)
+    assert r["ok"], r.get("reason")
+    s, f = r["result"]["s"], r["result"]["f"]
+    near, far = np.abs(s[:, 2, 0]), np.abs(s[:, 3, 0])   # spec node 3 is beside node 1: backward (near-end) coupling
+    assert near.max() > 0.2 and far.max() < 0.1 and 4.5e9 < f[int(near.argmax())] < 6e9
+    assert np.allclose(s, np.transpose(s, (0, 2, 1)), atol=1e-12)
+    assert np.abs(np.sum(np.abs(s[:, :, 0]) ** 2, axis=1) - 1).max() < 1e-9   # lossless: tan d = 0, sigma 1e30

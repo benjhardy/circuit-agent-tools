@@ -105,8 +105,11 @@ def _top003(ctx: Ctx):
         nd = c["nodes"]
         for n in nd:
             find(n)
-        if c["type"] in ("R", "L", "vsource", "diode", "port", "tline", "mline"):
+        if c["type"] in ("R", "L", "vsource", "diode", "port", "tline", "mline", "mstep"):
             parent[find(nd[0])] = find(nd[1])
+        elif c["type"] == "mcline":   # each strip conducts end to end; the two strips are isolated at DC
+            parent[find(nd[0])] = find(nd[1])
+            parent[find(nd[2])] = find(nd[3])
         elif c["type"] == "sblock":
             pass  # unknown DC behaviour (qucsator: duringDC=open)
     for n in list(parent):
@@ -329,7 +332,7 @@ def _swp003(ctx: Ctx):
         tot = 0.0
         for c in ctx.comps("tline"):
             tot += c["delay_s"]
-        for c in ctx.comps("mline"):
+        for c in ctx.comps("mline", "mcline"):
             tot += c["l"] * math.sqrt(ctx.s["substrates"][c["substrate"]]["er"]) / C0
         dphi = 360 * df * tot
         if dphi > 20:
@@ -505,6 +508,39 @@ def _tln004(ctx: Ctx):
         if sub.get("t", 0) / sub["h"] > 0.02:
             _f(ctx, "TLN004", "info", f"{c['name']}: t/h = {sub['t'] / sub['h']:.3f}; circuitRF's MLIN will differ "
                "from qucsator/scikit-rf by ~1-3 % in eeff and Z0", "Compare with t -> 0 to separate the effect.")
+
+
+@rule("TLN005", "Coupled microstrip model limits",
+      "The Kirschning-Jansen coupled-microstrip equations (even/odd Z0 and eeff, and their dispersion) are fits for "
+      "0.1 <= w/h <= 10, 0.1 <= s/h <= 10 and 1 <= er <= 18. Outside that range the even/odd impedances drift "
+      "without a warning from the simulator. A coupled section is also a single strip for the surface-wave and "
+      "transverse-resonance limits of TLN001.",
+      "Kirschning & Jansen, IEEE MTT-32 (1984); qucsator mscoupled.cpp")
+def _tln005(ctx: Ctx):
+    fmax = max([a["stop"] for a in ctx.analyses("sparam")] + [0.0])
+    for c in ctx.comps("mcline"):
+        sub = ctx.s["substrates"][c["substrate"]]
+        for x in microstrip.coupled_limits(c["w"], c["s"], sub) + microstrip.limits(c["w"], sub, fmax or 1e9):
+            _f(ctx, "TLN005", x["level"], f"{c['name']}: {x['message']}", "Check with an EM solver.")
+
+
+@rule("TLN006", "Open-end and width-step models",
+      "qucsator's MOPEN (Kirschning-Jansen-Koster) is an end capacitance fitted for 0.01 <= w/h <= 100, "
+      "1 <= er <= 50. MSTEP is a shunt C and series L from the Gupta-Garg fits (er <= 10, wide/narrow ratio "
+      "1.5-3.5 for C, <= 5 for L) and assumes W1 >= W2: written narrow side first (0.6 -> 1.2 mm on 0.508 mm "
+      "RO4350B, 5 GHz) it gave S11 = +j4.6e-3 and a phase advance of 0.22 degrees, wide side first -j0.95e-3 and "
+      "a delay of 0.39 degrees. The qucsator translator writes the wide side first. Neither part models the "
+      "coupling to a neighbouring strip.",
+      "qucsator msopen.cpp, msstep.cpp; Kirschning, Jansen & Koster, Electron. Lett. 1981; Gupta et al., "
+      "Microstrip Lines and Slotlines; this package (measured, 2026-10-26)")
+def _tln006(ctx: Ctx):
+    for c in ctx.comps("mopen"):
+        for x in microstrip.open_end_limits(c["w"], ctx.s["substrates"][c["substrate"]]):
+            _f(ctx, "TLN006", x["level"], f"{c['name']}: {x['message']}", "Check with an EM solver.")
+    for c in ctx.comps("mstep"):
+        for x in microstrip.step_limits(c["w1"], c["w2"], ctx.s["substrates"][c["substrate"]]):
+            _f(ctx, "TLN006", x["level"], f"{c['name']}: {x['message']}",
+               "Check the step with an EM solver if it matters for the result.")
 
 
 @rule("XYC001", "Xyce frequency-domain distributed and data elements",

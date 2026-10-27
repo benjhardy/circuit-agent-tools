@@ -71,3 +71,44 @@ def limits(w: float, sub: dict, f_max: float) -> list[dict]:
     if sub.get("t", 0) and sub["t"] > 0.2 * w:
         out.append({"level": "info", "message": "thick strip (t > 0.2 w): the thickness correction is approximate"})
     return out
+
+
+def coupled_limits(w: float, s: float, sub: dict) -> list[dict]:
+    """Fit range of the Kirschning-Jansen coupled-microstrip equations (static and dispersion)."""
+    out = []
+    u, g, er = w / sub["h"], s / sub["h"], sub["er"]
+    if not 0.1 <= u <= 10:
+        out.append({"level": "warning", "message": f"w/h = {u:.3g} outside the Kirschning-Jansen coupled-line fit "
+                                                   "0.1-10"})
+    if not 0.1 <= g <= 10:
+        out.append({"level": "warning", "message": f"s/h = {g:.3g} outside the Kirschning-Jansen coupled-line fit "
+                                                   "0.1-10"})
+    if not 1 <= er <= 18:
+        out.append({"level": "warning", "message": f"er = {er:g} outside the Kirschning-Jansen coupled-line fit 1-18"})
+    return out
+
+
+def open_end_limits(w: float, sub: dict) -> list[dict]:
+    """Fit range of the Kirschning-Jansen-Koster open-end model."""
+    u, er = w / sub["h"], sub["er"]
+    if not 0.01 <= u <= 100 or not 1 <= er <= 50:
+        return [{"level": "warning", "message": f"w/h = {u:.3g}, er = {er:g}: outside the open-end fit "
+                                                "(0.01 <= w/h <= 100, 1 <= er <= 50)"}]
+    return []
+
+
+def step_limits(w1: float, w2: float, sub: dict) -> list[dict]:
+    """Fit range of the Gupta-Garg width-step C and L (qucsator MSTEP), for the wide/narrow width ratio."""
+    r = max(w1, w2) / min(w1, w2)
+    out = []
+    if sub["er"] > 10:
+        out.append({"level": "warning", "message": f"er = {sub['er']:g} > 10: outside the step capacitance fit"})
+    if r > 5:
+        out.append({"level": "warning", "message": f"width ratio {r:.3g} > 5: outside the step inductance fit"})
+    elif r < 1.5:
+        t = math.log10(sub["er"])
+        r0 = (12.6 * t + 3.17) / (10.1 * t + 2.33)    # ratio where the capacitance fit crosses zero
+        out.append({"level": "info", "message": f"width ratio {r:.3g} < 1.5: below the step capacitance fit "
+                                                f"(1.5-3.5){'; the fitted C is negative here' if r < r0 else ''}. "
+                                                "The step is small at such ratios"})
+    return out

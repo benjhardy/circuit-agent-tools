@@ -126,6 +126,9 @@ class NgspiceBackend(_Spice):
             mn = "LT_" + re.sub(r"[^A-Za-z0-9_]", "_", c["name"])
             models.append(f".model {mn} LTRA R={fmt(r_eff)} L={fmt(p['L'])} G=0 C={fmt(p['C'])} LEN={fmt(c['l'])}")
             return [f"{_name('O', c['name'])} {nd[0]} 0 {nd[1]} 0 {mn}"]
+        if c["type"] in ("mcline", "mopen", "mstep"):
+            raise Unsupported(f"ngspice: {c['type']} {c['name']}: no coupled-microstrip or discontinuity model; use "
+                              "qucsator")
         raise Unsupported(f"ngspice: {c['type']} {c['name']} (Touchstone blocks) not supported; use qucsator, "
                           "circuitRF or scikit-rf")
 
@@ -245,6 +248,9 @@ class XyceBackend(_Spice):
             models.append(f".MODEL {mn} LIN TSTONEFILE={fn}")
             pairs = " ".join(f"{n} {_node(c['ref'])}" for n in nd)
             return [f"YLIN {re.sub(r'[^A-Za-z0-9_]', '_', c['name'])} {pairs} {mn}"]
+        if c["type"] in ("mcline", "mopen", "mstep"):
+            raise Unsupported(f"xyce: {c['type']} {c['name']}: no coupled-microstrip or discontinuity model; use "
+                              "qucsator")
         raise Unsupported(f"xyce: {c['type']} {c['name']} in .{a['type'].upper()} is not reliable in Xyce 7.10 "
                           "(measured: T/LTRA act as a wire and YLIN as an open circuit in .AC/.LIN)")
 

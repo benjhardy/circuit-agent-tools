@@ -11,6 +11,7 @@ scikit-rf 2.2.0. The translators raise `Unsupported` (with this reason) instead 
 | vsource / isource | isource only (open) | DC T H; AC in S | DC T H | DC T H (series chain for V) | Vdc, V_1Tone (no I) |
 | ideal line | S | S DC T | T only (wire in .AC) | S T | S |
 | microstrip | S (MLine, HJ + KJ, invariant er) | S T as LTRA, RLGC frozen at f_ref, no G | - | S (MLIN Hammerstad + Kirschning) | S (MLIN, own thickness model) |
+| coupled microstrip, open end, width step | - | - | - | S (MCOUPLED Kirschning-Jansen, MOPEN Kirschning-Jansen-Koster, MSTEP Gupta-Garg, wide side first) | - (no models in 1.0.9) |
 | Touchstone block | S (cubic interpolation, no extrapolation) | - | H only (YLIN; open in .AC) | S DC (SPfile, linear interp., open at DC) | S DC H (SnP, cubic spline, nearest-edge) |
 | diode (SPICE level 1) | - | DC T H | DC T H | DC T H (cathode first) | DC H |
 | harmonic balance | - | transient + exact-bin DFT | .HB (two-sided output) | .HB (poor convergence on hard drive) | hb (JSON) |

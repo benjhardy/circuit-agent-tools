@@ -74,6 +74,26 @@ def test_normalize_errors():
         normalize({"components": [{"type": "diode", "name": "D", "nodes": ["a", "0"], "model": {"xx": 1}}]})
 
 
+def test_normalize_coupled_microstrip_parts():
+    sub = {"s": {"er": 3.66, "h": "0.508mm"}}
+    s = normalize({"substrates": sub, "components": [
+        {"type": "mcline", "name": "C", "nodes": ["a", "b", "c", "d"], "w": "0.9mm", "s": "180um", "l": "8.6mm",
+         "substrate": "s"},
+        {"type": "mopen", "name": "O", "nodes": ["b"], "w": "0.9mm", "substrate": "s"},
+        {"type": "mstep", "name": "S", "nodes": ["a", "x"], "w1": "0.9mm", "w2": "1.1mm", "substrate": "s"}]})
+    c, o, st = s["components"]
+    assert c["s"] == pytest.approx(1.8e-4) and c["l"] == pytest.approx(8.6e-3) and o["w"] == pytest.approx(9e-4)
+    assert st["w2"] == pytest.approx(1.1e-3)
+    with pytest.raises(SpecError, match="needs 4 nodes"):
+        normalize({"substrates": sub, "components": [{"type": "mcline", "name": "C", "nodes": ["a", "b"], "w": 1e-3,
+                                                      "s": 1e-4, "l": 1e-2, "substrate": "s"}]})
+    with pytest.raises(SpecError, match="missing s"):
+        normalize({"substrates": sub, "components": [{"type": "mcline", "name": "C", "nodes": ["a", "b", "c", "d"],
+                                                      "w": 1e-3, "l": 1e-2, "substrate": "s"}]})
+    with pytest.raises(SpecError, match="not in substrates"):
+        normalize({"components": [{"type": "mopen", "name": "O", "nodes": ["a"], "w": 1e-3, "substrate": "x"}]})
+
+
 def test_diode_and_sources():
     s = normalize({"components": [
         {"type": "vsource", "name": "V1", "nodes": ["s", "0"], "sin": {"amp": "300mV", "freq": "100MHz"}},

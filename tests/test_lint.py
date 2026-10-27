@@ -172,6 +172,45 @@ def test_line_rules():
     assert "TLN003" in ids(s2, "warning")
 
 
+def test_coupled_line_and_discontinuity_rules():
+    def spec(w, s_gap, w1, w2, er=3.66):
+        return {"substrates": {"s": {"er": er, "h": "0.508mm"}}, "components": [
+            {"type": "port", "name": "P1", "nodes": ["a", "0"], "num": 1},
+            {"type": "mstep", "name": "ST", "nodes": ["a", "b"], "w1": w1, "w2": w2, "substrate": "s"},
+            {"type": "mcline", "name": "CL", "nodes": ["b", "c", "d", "e"], "w": w, "s": s_gap, "l": "8mm",
+             "substrate": "s"},
+            {"type": "mopen", "name": "O1", "nodes": ["c"], "w": w, "substrate": "s"},
+            {"type": "mopen", "name": "O2", "nodes": ["d"], "w": w, "substrate": "s"},
+            {"type": "port", "name": "P2", "nodes": ["e", "0"], "num": 2}],
+            "analyses": [{"type": "sparam", "start": "3GHz", "stop": "7GHz", "points": 201}]}
+
+    good = lint(spec("0.9mm", "0.2mm", "2mm", "1mm"))
+    assert good["counts"]["error"] == 0
+    assert not [f for f in good["findings"] if f["id"] in ("TLN005", "TLN006")]
+    r = lint(spec("0.9mm", "0.03mm", "1.1mm", "0.9mm", er=20))
+    msgs = {f["id"]: [] for f in r["findings"]}
+    for f in r["findings"]:
+        msgs[f["id"]].append(f["message"])
+    assert any("s/h" in m for m in msgs["TLN005"]) and any("er = 20" in m for m in msgs["TLN005"])
+    assert any("width ratio 1.22" in m and "negative" in m for m in msgs["TLN006"])
+    assert any("er = 20 > 10" in m for m in msgs["TLN006"])
+    f = [x for x in good["findings"] if x["id"] == "SUP001"][0]
+    assert f["runs_in"] == ["qucsator"] and f["severity"] == "warning"
+
+
+def test_coupled_line_dc_path():
+    s = {"substrates": {"s": {"er": 3.66, "h": "0.508mm"}}, "components": [
+        {"type": "vsource", "name": "V1", "nodes": ["a", "0"], "dc": 1},
+        {"type": "mstep", "name": "ST", "nodes": ["a", "b"], "w1": "2mm", "w2": "1mm", "substrate": "s"},
+        {"type": "mcline", "name": "CL", "nodes": ["b", "c", "d", "e"], "w": "1mm", "s": "0.2mm", "l": "8mm",
+         "substrate": "s"},
+        {"type": "R", "name": "R1", "nodes": ["c", "0"], "value": 50},
+        {"type": "C", "name": "C2", "nodes": ["e", "0"], "value": 1e-12}],
+        "analyses": [{"type": "dc"}]}
+    dc = [f for f in lint(s)["findings"] if f["id"] == "TOP003"]
+    assert sorted(f["node"] for f in dc) == ["d", "e"]   # line 1 conducts end to end; line 2 is isolated at DC
+
+
 def test_transient_and_hb_rules():
     s = {"components": [{"type": "vsource", "name": "V1", "nodes": ["s", "0"], "pulse": {"v1": 0, "v2": 1}},
                         {"type": "R", "name": "R", "nodes": ["s", "c"], "value": 50},
@@ -201,7 +240,7 @@ def test_lint_does_not_mutate_input():
     assert s == before
 
 
-@pytest.mark.parametrize("rid", ["TOP001", "UNI001", "SBK004", "XYC001", "HB001"])
+@pytest.mark.parametrize("rid", ["TOP001", "UNI001", "SBK004", "XYC001", "HB001", "TLN005", "TLN006"])
 def test_gotchas_doc_mentions_rule(rid):
     doc = (ROOT / "skills" / "circuit-simulation" / "references" / "gotchas.md").read_text(encoding="utf-8")
     assert rid in doc

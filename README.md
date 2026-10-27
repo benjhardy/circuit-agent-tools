@@ -15,7 +15,7 @@ simulator*, one call:
 | step | tool | what it does |
 |---|---|---|
 | describe | `spec`, `normalize`, `import-qucs` | one neutral JSON spec (R, L, C, ideal and microstrip lines, Touchstone S-blocks, ports, sources, diodes; S-parameter, DC, transient, harmonic-balance analyses); import Qucs-S schematics through Qucs-S itself |
-| lint | `lint`, `lint-rules`, `gotchas` | 31 rules, each with the lesson and its source: topology, SPICE case and prefix traps, ports and z0, sweep resolution (checked with the scikit-rf reference), Touchstone blocks (port count, band, z0, passivity, reciprocity, open ports), line-model limits, transient/HB settings, simulator coverage |
+| lint | `lint`, `lint-rules`, `gotchas` | 33 rules, each with the lesson and its source: topology, SPICE case and prefix traps, ports and z0, sweep resolution (checked with the scikit-rf reference), Touchstone blocks (port count, band, z0, passivity, reciprocity, open ports), line-model limits, transient/HB settings, simulator coverage |
 | translate | `translate` | ngspice decks, Xyce netlists, qucsator (Qucs-S) netlists, circuitRF `.cnl` (+ `.ctech`) |
 | cost, guard | `estimate`, `status` | wall time and RAM per simulator; refuses to start when the host is short of RAM; runs at `nice 10`, one at a time, with timeouts |
 | run | `simulate` | one simulator (or the scikit-rf reference): log scanning, Touchstone/CSV/JSON output, passivity and reciprocity checks, an `rflab.run/1` record |
@@ -107,7 +107,8 @@ A spec:
 ```
 
 Other parts: `tline` (z0 + `length_deg` at `f_ref`, or `length` + `eeff`), `mline` (w, l, substrate; substrates
-`{er, h, t, tand, sigma, rough}`), `sblock` (Touchstone file, one node per port, optional `ref`), `vsource` /
+`{er, h, t, tand, sigma, rough}`), `mcline` (coupled pair: w, s, l, substrate; nodes 1-2 line 1, 3-4 line 2 in the
+same direction, so 3 is beside 1), `mopen` (w, substrate; one node), `mstep` (w1, w2, substrate), `sblock` (Touchstone file, one node per port, optional `ref`), `vsource` /
 `isource` (`dc`, `ac`, `pulse {v1, v2, td, tr, tf, pw, per}`, `sin {offset, amp, freq, phase_deg}`, cosine
 reference), `diode` (SPICE level-1 `is, n, rs, cj0, vj, m, tt, bv, ibv, fc`). Analyses: `sparam`, `dc`, `tran
 {stop, step, outputs}`, `hb {f0, harmonics, outputs}`. Values are SI numbers or SI strings (`M` = mega,
@@ -137,6 +138,7 @@ with a reason, so a cross-check never silently compares fewer tools than you thi
 | R, L, C, ports, sources | S-param | all | all | all | S-param, DC, HB |
 | ideal line | S-param | all | **tran only** (wire in .AC) | S-param, tran | S-param |
 | microstrip | MLine (HJ + KJ) | LTRA frozen at f_ref | - | MLIN (HJ + KJ) | MLIN (own t-correction) |
+| coupled microstrip, open end, width step | - | - | - | MCOUPLED (KJ), MOPEN (KJK), MSTEP (Gupta-Garg) | - |
 | Touchstone block | S-param (no extrapolation) | - | **HB only** (open in .AC) | S-param, DC (open) | S-param, DC, HB |
 | diode | - | DC, tran, HB* | DC, tran, HB | DC, tran, HB | DC, HB |
 | S-parameters | Circuit | AC drive per port | .LIN | .SP | sparam |
@@ -167,7 +169,7 @@ write `results.json` next to themselves; each simulator run and each cross-check
 
 ## Gotchas
 
-All 31 rules with their lessons: [skills/circuit-simulation/references/gotchas.md](skills/circuit-simulation/references/gotchas.md)
+All 33 rules with their lessons: [skills/circuit-simulation/references/gotchas.md](skills/circuit-simulation/references/gotchas.md)
 (generated from the code). The ones found while building this:
 
 | gotcha | what happens | rule |

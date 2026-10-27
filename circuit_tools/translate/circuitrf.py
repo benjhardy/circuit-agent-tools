@@ -114,6 +114,11 @@ class CircuitRFBackend:
                     L.append(f"Vdc:{nm} {nd[0]} {nd[1]} Vdc={fmt(c['dc'])} V")
             elif t == "isource":
                 raise Unsupported("circuitRF backend: current sources not translated")
+            elif t in ("mcline", "mopen", "mstep"):
+                # circuitRF 1.0.9 microstrip parts: MLIN, MBEND, MTEE, MCROSS, MTAPER, MKLOPF, VIA; its Directional
+                # Coupler is an ideal fixed-coupling block, not a coupled line
+                raise Unsupported(f"circuitRF 1.0.9: no coupled-line, open-end or step microstrip model ({t} "
+                                  f"{c['name']}); use qucsator, or an S-block for the part")
             elif t == "diode":
                 m = c["model"]
                 L.append(f"Diode:{nm} {nd[0]} {nd[1]} Is={fmt(m['is'])} N={fmt(m['n'])} Rs={fmt(m['rs'])} "

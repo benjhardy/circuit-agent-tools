@@ -6,8 +6,11 @@ which is what Qucs-S itself runs for the qucsator engine; the output is the Qucs
 
 Notes: ground is 'gnd'. TLIN has no eeff (a line given as length + eeff is written with the electrical length
 L*sqrt(eeff) in air). MLIN takes a SUBST (rho = 1/sigma, D = rms roughness), Hammerstad + Kirschning models.
-SPfile has N+1 terminals (the last is the reference). The Diode takes the cathode FIRST (the opposite of SPICE). The Vac source is a sine in transient (cosine-referenced
-spec phases get +90 degrees). HB converged poorly for strongly driven diodes in the build tested.
+SPfile has N+1 terminals (the last is the reference). MCOUPLED, MOPEN and MSTEP use the Kirschning-Jansen models
+where qucsator offers a choice (MCOUPLED Model and DispModel, MOPEN Model); MSTEP has one model (Gupta-Garg fits,
+written wide side first). The Diode takes the cathode FIRST (the opposite of SPICE). The Vac source is a sine in
+transient (cosine-referenced spec phases get +90 degrees). HB converged poorly for strongly driven diodes in the
+build tested.
 """
 from __future__ import annotations
 
@@ -35,8 +38,9 @@ class QucsatorBackend:
     NAME = "qucsator"
     EXE = "qucsator_rf"
     SUPPORT = {
-        "sparam": {"components": LUMPED + ["tline", "mline", "sblock"], "notes": ".SP; MLIN Hammerstad/Kirschning; "
-                                                                            "SPfile linear interpolation"},
+        "sparam": {"components": LUMPED + ["tline", "mline", "mcline", "mopen", "mstep", "sblock"],
+                   "notes": ".SP; MLIN Hammerstad/Kirschning; MCOUPLED Kirschning-Jansen (static and dispersion); "
+                            "MOPEN Kirschning-Jansen-Koster; MSTEP Gupta-Garg C/L fits; SPfile linear interpolation"},
         "dc": {"components": LUMPED + ["diode", "tline", "mline", "sblock"], "notes": ".DC; SPfile duringDC=open"},
         "tran": {"components": LUMPED + ["diode", "tline"], "notes": ".TR"},
         "hb": {"components": LUMPED + ["diode"], "notes": ".HB (converges poorly on hard-driven diodes)"},
@@ -59,14 +63,27 @@ class QucsatorBackend:
                 el = c["length"] * c["eeff"] ** 0.5
                 out.append(f'TLIN:{nm} {nd[0]} {nd[1]} Z="{fmt(c["z0"])}" L="{fmt(el)}" Alpha="0 dB" Temp="{T}"')
             elif t == "mline":
-                sub = s["substrates"][c["substrate"]]
-                sn = "Sub_" + _id(c["substrate"])
-                line = (f'SUBST:{sn} er="{fmt(sub["er"])}" h="{fmt(sub["h"])}" t="{fmt(sub["t"])}" '
-                        f'tand="{fmt(sub["tand"])}" rho="{fmt(1 / sub["sigma"])}" D="{fmt(sub["rough"])}"')
-                if line not in out:
-                    out.insert(0, line)
+                sn = self.subst(s, c, out)
                 out.append(f'MLIN:{nm} {nd[0]} {nd[1]} Subst="{sn}" W="{fmt(c["w"])}" L="{fmt(c["l"])}" '
                            f'Model="Hammerstad" DispModel="Kirschning" Temp="{T}"')
+            elif t == "mcline":
+                sn = self.subst(s, c, out)
+                # MCOUPLED nodes: 1-2 line 1, then line 2 from the far end back (3 beside 2, 4 beside 1; checked
+                # with |S14| = near-end coupling); the spec runs line 2 in the same direction, so 3 and 4 swap
+                out.append(f'MCOUPLED:{nm} {nd[0]} {nd[1]} {nd[3]} {nd[2]} Subst="{sn}" W="{fmt(c["w"])}" '
+                           f'L="{fmt(c["l"])}" S="{fmt(c["s"])}" Model="Kirschning" DispModel="Kirschning" '
+                           f'Temp="{T}"')
+            elif t == "mopen":
+                sn = self.subst(s, c, out)
+                out.append(f'MOPEN:{nm} {nd[0]} Subst="{sn}" W="{fmt(c["w"])}" MSDispModel="Kirschning" '
+                           f'MSModel="Hammerstad" Model="Kirschning"')
+            elif t == "mstep":
+                sn = self.subst(s, c, out)
+                # msstep.cpp (Gupta-Garg C and L fits) assumes W1 >= W2: written narrow side first, S11 changed
+                # sign and S21 showed a phase advance (lint TLN006). The step is reciprocal: write the wide side first.
+                (n1, w1), (n2, w2) = sorted([(nd[0], c["w1"]), (nd[1], c["w2"])], key=lambda x: -x[1])
+                out.append(f'MSTEP:{nm} {n1} {n2} Subst="{sn}" W1="{fmt(w1)}" W2="{fmt(w2)}" '
+                           f'MSDispModel="Kirschning" MSModel="Hammerstad"')
             elif t == "sblock":
                 fn = Path(c["file"]).name
                 job.copies[fn] = c["file"]
@@ -92,6 +109,16 @@ class QucsatorBackend:
             else:
                 raise Unsupported(f"qucsator: {t} {c['name']}")
         return out
+
+    def subst(self, s: dict, c: dict, out: list) -> str:
+        """Name of the SUBST part for the component's substrate; written once, at the top of the netlist."""
+        sub = s["substrates"][c["substrate"]]
+        sn = "Sub_" + _id(c["substrate"])
+        line = (f'SUBST:{sn} er="{fmt(sub["er"])}" h="{fmt(sub["h"])}" t="{fmt(sub["t"])}" '
+                f'tand="{fmt(sub["tand"])}" rho="{fmt(1 / sub["sigma"])}" D="{fmt(sub["rough"])}"')
+        if line not in out:
+            out.insert(0, line)
+        return sn
 
     def source(self, c, a, nd, nm) -> list[str]:
         """Sources as qucsator parts. Voltage parts are chained in series through internal nodes (parallel ideal

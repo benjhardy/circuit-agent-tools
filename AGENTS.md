@@ -31,6 +31,8 @@ You are simulating an RF circuit. Use the `circuit-tools` CLI (or the `circuit_*
   a z0 resistor for a matched termination), check passivity of imported data.
 - Xyce 7.10: no ideal lines, LTRA or Touchstone blocks in `.AC`/`.LIN` (silently wrong); YLIN only in `.HB`.
 - ngspice: no Touchstone blocks, microstrip only as an RLGC line frozen at `f_ref`, HB only as transient + DFT.
+- Coupled microstrip (`mcline`), open ends (`mopen`) and width steps (`mstep`) run in qucsator only. `mcline`
+  nodes: 1 -> 2 is line 1, 3 -> 4 is line 2 in the same direction (3 beside 1).
 - circuitRF: no transient; use `circuitrf serve --root DIR` (its own MCP) for schematics, layout and EM.
 - qucsator's diode takes the cathode first (the translator handles it); its HB may not converge on hard drive:
   check `hb_converged`.
@@ -38,6 +40,6 @@ You are simulating an RF circuit. Use the `circuit-tools` CLI (or the `circuit_*
   1 V diode drive; 32 agreed to 0.02 dB).
 - On Windows the simulators run in WSL from a generated `run.sh`; do not hand-write `wsl bash -c "..."` with `$`.
 
-All 31 lint rules with their lessons: `circuit-tools gotchas '{}'` or
+All 33 lint rules with their lessons: `circuit-tools gotchas '{}'` or
 `skills/circuit-simulation/references/gotchas.md`. External tools and MCP servers we use or evaluated:
 `EXTERNAL.yaml`.
